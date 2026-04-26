@@ -34,7 +34,7 @@ except ImportError:
  
 # ---------- Page config ----------
 st.set_page_config(
-    page_title="Contextual AI Demo",
+    page_title="Contextual AI MANISH SINGH",
     page_icon="🧠",
     layout="wide",
 )
