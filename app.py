@@ -11,7 +11,7 @@ Streamlit Community Cloud:
     In Settings → Secrets:
         CONTEXTUAL_API_KEY = "your-key"
 """
-%pip install contextual-client matplotlib tqdm requests pandas dotenv 
+ 
 import os
 import io
 import json
