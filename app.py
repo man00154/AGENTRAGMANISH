@@ -197,7 +197,7 @@ def map_category(test_q: str) -> Optional[str]:
  
  
 # ---------- Header ----------
-st.title("🧠 Contextual AI — Full Demo")
+st.title("🧠 Contextual AI — MANISH SINGH")
 st.caption("Datastores · Agents · Parsing · Reranking · GLM · LMUnit Eval")
  
  
