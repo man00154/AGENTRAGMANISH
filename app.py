@@ -41,14 +41,25 @@ st.set_page_config(
 load_dotenv()
  
  
+def _clean_key(k: str) -> str:
+    """Strip whitespace and any stray surrounding quotes from an API key."""
+    if not k:
+        return ""
+    k = k.strip()
+    # remove a single layer of surrounding quotes if present
+    if len(k) >= 2 and k[0] == k[-1] and k[0] in ("'", '"'):
+        k = k[1:-1].strip()
+    return k
+ 
+ 
 def get_api_key() -> str:
-    """Priority: Streamlit secrets → env var → empty."""
+    """Priority: Streamlit secrets → env var → empty. Always cleaned."""
     try:
         if "CONTEXTUAL_API_KEY" in st.secrets:
-            return st.secrets["CONTEXTUAL_API_KEY"]
+            return _clean_key(st.secrets["CONTEXTUAL_API_KEY"])
     except Exception:
         pass
-    return os.getenv("CONTEXTUAL_API_KEY", "")
+    return _clean_key(os.getenv("CONTEXTUAL_API_KEY", ""))
  
  
 # ---------- Session state ----------
@@ -136,6 +147,7 @@ with st.sidebar:
         value=get_api_key(),
         help="Set CONTEXTUAL_API_KEY in .env or Streamlit Secrets to skip this.",
     )
+    api_key = _clean_key(api_key)
     datastore_name = st.text_input("Datastore name", value="Financial_Demo_RAG")
     agent_name = st.text_input("Agent name", value="Demo")
  
@@ -144,6 +156,24 @@ with st.sidebar:
     st.caption(f"Datastore: `{st.session_state.datastore_id or '—'}`")
     st.caption(f"Agent: `{st.session_state.agent_id or '—'}`")
     st.caption(f"Docs ingested: {len(st.session_state.document_ids)}")
+ 
+    # Key sanity check
+    if api_key:
+        masked = f"{api_key[:4]}…{api_key[-4:]} (len {len(api_key)})"
+        st.caption(f"Key: `{masked}`")
+        if st.button("🔑 Test API key", use_container_width=True):
+            try:
+                r = requests.get(
+                    f"{BASE_URL}/datastores",
+                    headers={"authorization": f"Bearer {api_key}", "accept": "application/json"},
+                    timeout=15,
+                )
+                if r.status_code == 200:
+                    st.success("Key is valid ✅")
+                else:
+                    st.error(f"Status {r.status_code}: {r.text[:200]}")
+            except Exception as e:
+                st.error(f"Request failed: {e}")
  
     st.divider()
     st.caption("Built with Contextual AI + Streamlit")
